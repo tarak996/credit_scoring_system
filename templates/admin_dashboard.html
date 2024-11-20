@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <div id="adminLoanList"></div>
+    </div>
+
+    <script>
+        const BASE_URL = "http://127.0.0.1:5000";
+
+        async function fetchLoans() {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${BASE_URL}/admin/all-loans`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            const loans = await response.json();
+            const adminLoanList = document.getElementById("adminLoanList");
+
+            if (response.ok) {
+                adminLoanList.innerHTML = loans.map(loan => `
+                    <div class="loan-item">
+                        <p><strong>Loan ID:</strong> ${loan.loan_id}</p>
+                        <p><strong>User Email:</strong> ${loan.user_email}</p>
+                        <p><strong>Amount:</strong> ${loan.loan_amount}</p>
+                        <p><strong>Purpose:</strong> ${loan.purpose}</p>
+                        <p><strong>Credit Score:</strong> ${loan.credit_score}</p>
+                        <p><strong>Status:</strong> ${loan.status}</p>
+                        <button onclick="reviewLoan('${loan.loan_id}', 'Approved')">Approve</button>
+                        <button onclick="reviewLoan('${loan.loan_id}', 'Rejected')">Reject</button>
+                    </div>
+                `).join('');
+            } else {
+                adminLoanList.innerHTML = `<p>${loans.error || "Failed to fetch loans."}</p>`;
+            }
+        }
+
+        async function reviewLoan(loanId, status) {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${BASE_URL}/admin/review-loan/${loanId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ status })
+            });
+
+            const result = await response.json();
+            alert(result.message || result.error);
+            fetchLoans(); // Refresh the loan list
+        }
+
+        fetchLoans();
+    </script>
+</body>
+</html>

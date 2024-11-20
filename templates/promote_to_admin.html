@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Promote to Admin</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Promote a User to Admin</h1>
+        <form id="promoteForm">
+            <input type="email" id="userEmail" placeholder="User Email" required>
+            <button type="submit">Promote to Admin</button>
+        </form>
+    </div>
+
+    <script>
+        const BASE_URL = "http://127.0.0.1:5000";
+
+        document.getElementById("promoteForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem("token"); // Admin's token
+            const email = document.getElementById("userEmail").value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/user/promote-to-admin`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ email }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message);
+                } else {
+                    alert(result.error || "Failed to promote user to admin.");
+                }
+            } catch (error) {
+                console.error("Error promoting user:", error);
+                alert("An error occurred. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>

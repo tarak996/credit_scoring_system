@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Loan Status</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Loan Status</h1>
+        <div id="loanStatus"></div>
+    </div>
+
+    <script>
+        const BASE_URL = "http://127.0.0.1:5000";
+
+        async function fetchLoanStatus() {
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch(`${BASE_URL}/loan/status`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    document.getElementById("loanStatus").innerHTML = `<p>${response.statusText}</p>`;
+                    return;
+                }
+
+                const loans = await response.json();
+                const loanStatusDiv = document.getElementById("loanStatus");
+
+                if (loans.length === 0) {
+                    loanStatusDiv.innerHTML = "<p>No loan applications found.</p>";
+                } else {
+                    loans.forEach((loan) => {
+                        loanStatusDiv.innerHTML += `
+                            <div class="loan">
+                                <p><strong>Loan ID:</strong> ${loan.loan_id}</p>
+                                <p><strong>Amount:</strong> ${loan.loan_amount}</p>
+                                <p><strong>Status:</strong> ${loan.status}</p>
+                                <p><strong>Credit Score:</strong> ${loan.credit_score}</p>
+                                <p><strong>Purpose:</strong> ${loan.purpose}</p>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching loan status:", error);
+                document.getElementById("loanStatus").innerHTML = "<p>Error loading loan status. Please try again later.</p>";
+            }
+        }
+
+        fetchLoanStatus();
+    </script>
+</body>
+</html>
